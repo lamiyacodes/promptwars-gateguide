@@ -1,16 +1,8 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ reply: "Method not allowed" });
+  }
 
-dotenv.config();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.post("/api/chat", async (req, res) => {
   try {
     const { systemPrompt, messages } = req.body;
 
@@ -32,7 +24,6 @@ app.post("/api/chat", async (req, res) => {
     );
 
     const data = await response.json();
-    console.log("Gemini raw response:", JSON.stringify(data, null, 2));
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Kuch gadbad ho gaya, phir try karo.";
 
     res.json({ reply });
@@ -40,17 +31,4 @@ app.post("/api/chat", async (req, res) => {
     console.error(err);
     res.status(500).json({ reply: "Server error, try again." });
   }
-});
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use(express.static(path.join(__dirname, "dist")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
-
-app.listen(3001, () => {
-  console.log("GateGuide backend running on http://localhost:3001");
-});
+}

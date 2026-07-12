@@ -1,16 +1,31 @@
-# React + Vite
+# GateGuide 🏟️⚽
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A multilingual navigation and accessibility assistant for FIFA World Cup 2026 stadiums, built for Hack2Skill PromptWars Challenge 4: Smart Stadiums & Tournament Operations.
 
-Currently, two official plugins are available:
+## The Problem
+Massive stadiums are overwhelming even for fluent local speakers. Add a language barrier, a mobility need, or a genuine panic moment, and navigating becomes a real safety issue — not just an inconvenience.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## The Solution
+GateGuide lets fans choose English or Hinglish upfront, then answers real questions about gates, accessible routes, restrooms, food, and medical points using Google's Gemini API grounded in structured stadium data. A dedicated SOS button gives instant, calm emergency guidance with one tap.
 
-## React Compiler
+## Features
+- 🌍 Language choice on entry (English / Hinglish)
+- 🧭 Real-time navigation grounded in stadium data
+- ♿ Accessibility-first routing
+- 🚨 One-tap SOS emergency assistance
+- 💬 Natural, multi-turn conversation (remembers context)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
+- Frontend: React (Vite)
+- Backend: Node.js + Express
+- AI: Google Gemini API
+- Styling: Inline CSS-in-JS, stadium-night theme
 
-## Expanding the ESLint configuration
+## Running Locally
+1. `npm install`
+2. Add a `.env` file with `GEMINI_API_KEY=your_key_here`
+3. Run the backend: `node server.js`
+4. In a separate terminal, run the frontend: `npm run dev`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Author
+Lamiya Zainab — [@lamiyacodes](https://github.com/lamiyacodes)

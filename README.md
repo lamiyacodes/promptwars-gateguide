@@ -17,15 +17,12 @@ GateGuide lets fans choose English or Hinglish upfront, then answers real questi
 
 ## Tech Stack
 - Frontend: React (Vite)
-- Backend: Node.js + Express
+- Backend: Vercel Serverless Functions
 - AI: Google Gemini API
 - Styling: Inline CSS-in-JS, stadium-night theme
 
-## Running Locally
-1. `npm install`
-2. Add a `.env` file with `GEMINI_API_KEY=your_key_here`
-3. Run the backend: `node server.js`
-4. In a separate terminal, run the frontend: `npm run dev`
+## Live Demo
+🔗 [Try GateGuide live](promptwars-gateguide.vercel.app)
 
 ## Author
 Lamiya Zainab — [@lamiyacodes](https://github.com/lamiyacodes)

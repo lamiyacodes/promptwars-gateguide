@@ -75,7 +75,7 @@ async function sendMessage(text) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/chat", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

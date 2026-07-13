@@ -111,7 +111,17 @@ async function sendMessage(text) {
   }
 
   return (
-    <div style={{ maxWidth: 460, margin: "40px auto", background: "#0A1F1A", borderRadius: 20, overflow: "hidden", fontFamily: "sans-serif", height: 600, display: "flex", flexDirection: "column" }}>
+    <div style={{ maxWidth: 1100, margin: "30px auto", background: "#0A1F1A", borderRadius: 20, overflow: "hidden", fontFamily: "sans-serif", height: 650, display: "flex" }}>
+  <div style={{ width: 200, background: "#0D2A21", borderRight: "1px solid #1E4A3A", padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ color: "#F5F1E6", fontWeight: 800, fontSize: 16 }}>🏟️ GateGuide</div>
+    <div style={{ color: "#8FBFA8", fontSize: 12 }}>Operations Portal</div>
+    <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ color: "#F4B942", fontSize: 13, fontWeight: 700, background: "#123328", padding: "8px 10px", borderRadius: 8 }}>💬 AI Assistant</div>
+      <div style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px" }}>📍 Gate Status</div>
+      <div style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px" }}>♿ Accessibility</div>
+    </div>
+  </div>
+  <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: 18, background: "#123328", color: "#F5F1E6", fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
   🏟️ GateGuide
@@ -214,6 +224,23 @@ async function sendMessage(text) {
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type karo…" style={{ flex: 1 }} />
         <button type="submit">➤</button>
       </form>
+  </div>
+
+  <div style={{ width: 220, background: "#0D2A21", borderLeft: "1px solid #1E4A3A", padding: 20 }}>
+    <div style={{ color: "#F5F1E6", fontWeight: 700, fontSize: 13, marginBottom: 14 }}>⚡ Live Status</div>
+    <div style={{ background: "#123328", borderRadius: 10, padding: 12, marginBottom: 10 }}>
+      <div style={{ color: "#8FBFA8", fontSize: 11 }}>Gates Active</div>
+      <div style={{ color: "#F4B942", fontSize: 20, fontWeight: 800 }}>4 / 4</div>
     </div>
-  );
+    <div style={{ background: "#123328", borderRadius: 10, padding: 12, marginBottom: 10 }}>
+      <div style={{ color: "#8FBFA8", fontSize: 11 }}>Accessible Routes</div>
+      <div style={{ color: "#4ADE80", fontSize: 20, fontWeight: 800 }}>3 Ready</div>
+    </div>
+    <div style={{ background: "#123328", borderRadius: 10, padding: 12 }}>
+      <div style={{ color: "#8FBFA8", fontSize: 11 }}>Medical Points</div>
+      <div style={{ color: "#F5F1E6", fontSize: 20, fontWeight: 800 }}>2 Staffed</div>
+    </div>
+  </div>
+</div>
+);
 }

@@ -116,9 +116,19 @@ async function sendMessage(text) {
     <div style={{ color: "#F5F1E6", fontWeight: 800, fontSize: 16 }}>🏟️ GateGuide</div>
     <div style={{ color: "#8FBFA8", fontSize: 12 }}>Operations Portal</div>
     <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ color: "#F4B942", fontSize: 13, fontWeight: 700, background: "#123328", padding: "8px 10px", borderRadius: 8 }}>💬 AI Assistant</div>
-      <div style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px" }}>📍 Gate Status</div>
-      <div style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px" }}>♿ Accessibility</div>
+      <div style={{ color: "#F4B942", fontSize: 13, fontWeight: 700, background: "#123328", padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}>💬 AI Assistant</div>
+<div
+  onClick={() => setShowFacts(!showFacts)}
+  style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px", cursor: "pointer" }}
+>
+  📍 Gate Status
+</div>
+<div
+  onClick={() => sendMessage(language === "en" ? "Tell me about accessibility options here" : "Accessibility options kya hain yahan?")}
+  style={{ color: "#8FBFA8", fontSize: 13, padding: "8px 10px", cursor: "pointer" }}
+>
+  ♿ Accessibility
+</div>
     </div>
   </div>
   <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>

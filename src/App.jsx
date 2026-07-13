@@ -77,7 +77,6 @@ function StadiumMap({ c, gateData }) {
       <rect x="15" y="135" width="170" height="15" rx="4" fill="none" stroke={c.border} strokeWidth="1" />
       <rect x="8" y="30" width="12" height="100" rx="4" fill="none" stroke={c.border} strokeWidth="1" />
       <rect x="180" y="30" width="12" height="100" rx="4" fill="none" stroke={c.border} strokeWidth="1" />
-
       {positions.map((p) => {
         const gate = gateData.find((g) => g.id === p.id);
         const dotColor = gate?.crowd === "High" ? c.red : gate?.crowd === "Medium" ? c.accent : c.green;
@@ -107,12 +106,20 @@ export default function App() {
   const [showFacts, setShowFacts] = useState(false);
   const [theme, setTheme] = useState("dark");
   const [view, setView] = useState("home");
+  const [weather, setWeather] = useState(null);
   const scrollRef = useRef(null);
   const c = THEMES[theme];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=40.8135&longitude=-74.0745&current_weather=true")
+      .then((res) => res.json())
+      .then((data) => setWeather(data.current_weather))
+      .catch(() => setWeather(null));
+  }, []);
 
   function startChat(lang) {
     setLanguage(lang);
@@ -185,18 +192,18 @@ export default function App() {
   return (
     <div style={{ maxWidth: 1140, margin: "30px auto", background: c.bg, borderRadius: 20, overflow: "hidden", fontFamily: "'Inter', sans-serif", height: 680, display: "flex" }}>
       <style>{`
-  @keyframes pulse {
-    0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
-  }
-  .console-card {
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  .console-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-  }
-`}</style>
+        @keyframes pulse {
+          0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
+        }
+        .console-card {
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .console-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+      `}</style>
 
       <div style={{ width: 210, background: c.sidebar, borderRight: `1px solid ${c.border}`, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ color: c.text, fontWeight: 800, fontSize: 16 }}>🏟️ GateGuide</div>
@@ -226,7 +233,7 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             {CONSOLES.map((cs) => (
               <div key={cs.id} onClick={() => openConsole(cs.id)} className="console-card" style={{
-                 background: c.card, border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: "pointer",
+                background: c.card, border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: "pointer",
               }}>
                 <div style={{ fontSize: 26, marginBottom: 10 }}>{cs.icon}</div>
                 <div style={{ color: c.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{cs.title}</div>
@@ -303,6 +310,16 @@ export default function App() {
       )}
 
       <div style={{ width: 240, background: c.sidebar, borderLeft: `1px solid ${c.border}`, padding: 20, overflowY: "auto" }}>
+        {weather && (
+          <div style={{ background: c.card, borderRadius: 10, padding: 12, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ color: c.subtext, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5 }}>Live Weather · MetLife Stadium</div>
+              <div style={{ color: c.text, fontSize: 18, fontWeight: 800 }}>{Math.round(weather.temperature * 9/5 + 32)}°F</div>
+            </div>
+            <span style={{ fontSize: 22 }}>🌤️</span>
+          </div>
+        )}
+
         <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Stadium Map</div>
         <StadiumMap c={c} gateData={STADIUM_DATA.gates} />
 

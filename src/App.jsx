@@ -22,15 +22,15 @@ const STADIUM_DATA = {
 };
 
 const SUGGESTIONS_EN = [
-  { label: "Guide me to Gate 4", icon: "🥅" },
-  { label: "Nearest accessible washroom?", icon: "♿" },
-  { label: "I'm lost, need help!", icon: "🚨" },
+  { label: "How do I get to my seat?", icon: "🥅" },
+  { label: "Is there a wheelchair-friendly route?", icon: "♿" },
+  { label: "Where can I grab food nearby?", icon: "🍔" },
 ];
 
 const SUGGESTIONS_HI = [
-  { label: "Gate 4 tak jaana hai", icon: "🥅" },
-  { label: "Nearest accessible washroom?", icon: "♿" },
-  { label: "Main lost ho gaya hoon", icon: "🚨" },
+  { label: "Mera seat kahan hai?", icon: "🥅" },
+  { label: "Wheelchair wala route hai kya?", icon: "♿" },
+  { label: "Khana kahan milega paas mein?", icon: "🍔" },
 ];
 
 const SYSTEM_PROMPT = `You are "GateGuide", a warm multilingual stadium assistant for a FIFA World Cup 2026 venue.
@@ -60,6 +60,7 @@ function startChat(lang) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState(null);
+  const [showFacts, setShowFacts] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -111,23 +112,75 @@ async function sendMessage(text) {
 
   return (
     <div style={{ maxWidth: 460, margin: "40px auto", background: "#0A1F1A", borderRadius: 20, overflow: "hidden", fontFamily: "sans-serif", height: 600, display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: 18, background: "#123328", color: "#F5F1E6", fontWeight: 700 }}>
-        🏟️ GateGuide
+      <div style={{ padding: 18, background: "#123328", color: "#F5F1E6", fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+  🏟️ GateGuide
+  <span style={{
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    background: "#4ADE80",
+    display: "inline-block",
+    animation: "pulse 1.5s infinite",
+  }} />
+</span>
+  <div style={{ display: "flex", gap: 8 }}>
+    <button
+      onClick={() => setShowFacts(!showFacts)}
+      style={{ background: "transparent", border: "1px solid #8FBFA8", color: "#8FBFA8", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}
+    >
+      ℹ️ Gates
+    </button>
+    <button
+      onClick={() => setLanguage(null)}
+      style={{ background: "transparent", border: "1px solid #8FBFA8", color: "#8FBFA8", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}
+    >
+      ↺ Reset
+    </button>
+  </div>
+</div>
+
+{showFacts && (
+  <div style={{ background: "#0D2A21", padding: 14, fontSize: 12, color: "#D9E8DF", borderBottom: "1px solid #1E4A3A" }}>
+    {STADIUM_DATA.gates.map((g, i) => (
+      <div key={i} style={{ marginBottom: 4 }}>
+        <strong>{g.id}</strong> — {g.section} · {g.note}
       </div>
+    ))}
+  </div>
+)}
 
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         {messages.map((m, i) => (
-          <div key={i} style={{
-            alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-            background: m.role === "user" ? "#F4B942" : "#123328",
-            color: m.role === "user" ? "#3A2A05" : "#F5F1E6",
-            padding: "10px 14px",
-            borderRadius: 14,
-            maxWidth: "80%",
-          }}>
-            {m.text}
-          </div>
-        ))}
+  <div key={i} style={{
+    alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+    background: m.role === "user" ? "#F4B942" : "#123328",
+    color: m.role === "user" ? "#3A2A05" : "#F5F1E6",
+    padding: "10px 14px",
+    borderRadius: 14,
+    maxWidth: "80%",
+    position: "relative",
+  }}>
+    {m.text}
+    {m.role === "assistant" && (
+      <button
+        onClick={() => navigator.clipboard.writeText(m.text)}
+        style={{
+          display: "block",
+          marginTop: 6,
+          background: "transparent",
+          border: "none",
+          color: "#8FBFA8",
+          fontSize: 11,
+          cursor: "pointer",
+          padding: 0,
+        }}
+      >
+        📋 Copy
+      </button>
+    )}
+  </div>
+))}
         {loading && <div style={{ color: "#8FBFA8" }}>GateGuide typing…</div>}
       </div>
 

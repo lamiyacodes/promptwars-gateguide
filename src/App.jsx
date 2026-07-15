@@ -107,8 +107,8 @@ function StadiumMap({ c, gateData }) {
 }
 
 const CONSOLES = [
-  { id: "assistant", code: "AI", title: "AI Assistant", desc: "Chat with GateGuide for real-time help" },
-  { id: "navigation", code: "NAV", title: "Smart Navigation", desc: "Gate map & accessible routing" },
+  { id: "assistant", code: "AI", title: "AI Assistant", desc: "Real-time chat & matchday help" },
+  { id: "navigation", code: "NAV", title: "Smart Navigation", desc: "Gate map & accessible routes" },
   { id: "emergency", code: "SOS", title: "Emergency Center", desc: "One-tap SOS & medical help" },
   { id: "accessibility", code: "ACC", title: "Accessibility Hub", desc: "Step-free routes & support" },
 ];
@@ -122,6 +122,7 @@ export default function App() {
   const [theme, setTheme] = useState("dark");
   const [weather, setWeather] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const bubbleScrollRef = useRef(null);
   const c = THEMES[theme];
 
@@ -167,6 +168,7 @@ export default function App() {
   }
 
   function openConsole(id) {
+    setNavOpen(false);
     if (id === "navigation") {
       setShowFacts(true);
       return;
@@ -198,8 +200,8 @@ export default function App() {
   }
 
   const navItems = [
-    { code: "H", label: "Home", onClick: () => setChatOpen(false) },
-    { code: "AI", label: "AI Assistant", onClick: () => setChatOpen(true) },
+    { code: "H", label: "Home", onClick: () => { setChatOpen(false); setNavOpen(false); } },
+    { code: "AI", label: "AI Assistant", onClick: () => { setChatOpen(true); setNavOpen(false); } },
     { code: "NAV", label: "Navigation", onClick: () => openConsole("navigation") },
     { code: "SOS", label: "Emergency", onClick: () => openConsole("emergency") },
     { code: "ACC", label: "Accessibility", onClick: () => openConsole("accessibility") },
@@ -208,6 +210,20 @@ export default function App() {
   return (
     <div className="gg-shell" style={{ maxWidth: 1140, margin: "30px auto", background: c.bg, borderRadius: 20, overflow: "hidden", fontFamily: "'Inter', sans-serif", position: "relative" }}>
       <style>{`
+        *, *::before, *::after {
+          box-sizing: border-box;
+        }
+        .gg-console-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .gg-info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
         @keyframes pulse {
           0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
         }
@@ -231,30 +247,115 @@ export default function App() {
         .gg-sidebar {
           width: 210px;
           flex-shrink: 0;
+          overflow-y: auto;
         }
         .gg-right {
           width: 240px;
           flex-shrink: 0;
+          overflow-y: auto;
         }
         .gg-main {
           flex: 1;
           min-width: 0;
+          overflow-y: auto;
         }
+        .gg-mobile-topbar { display: none; }
+        .gg-backdrop { display: none; }
+        .gg-nav-toggle { display: none; }
+
         @media (max-width: 860px) {
           .gg-shell {
             flex-direction: column;
             height: auto;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-height: none;
+            overflow: visible;
+            overflow-x: hidden;
+            margin: 0;
+            border-radius: 0;
+            max-width: 100%;
           }
-          .gg-sidebar, .gg-right {
+          .gg-mobile-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 16px;
+            background: ${c.sidebar};
+            border-bottom: 1px solid ${c.border};
+            position: sticky;
+            top: 0;
+            z-index: 60;
+          }
+          .gg-nav-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: ${c.card};
+            border: 1px solid ${c.border};
+            color: ${c.text};
+            font-size: 16px;
+            cursor: pointer;
+          }
+          .gg-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 80%;
+            max-width: 300px;
+            transform: translateX(-105%);
+            transition: transform 0.25s ease;
+            z-index: 200;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+          }
+          .gg-sidebar.open {
+            transform: translateX(0);
+          }
+          .gg-backdrop.open {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 150;
+          }
+          .gg-main, .gg-right {
             width: 100%;
+            overflow-y: visible;
+          }
+          .gg-main {
+            padding: 20px 16px !important;
+          }
+          .gg-right {
+            padding: 20px 16px 110px !important;
+            border-left: none !important;
+            border-top: 1px solid ${c.border};
+          }
+          .gg-console-grid, .gg-info-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
 
-      <div className="gg-sidebar" style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ color: c.text, fontWeight: 800, fontSize: 16, letterSpacing: 1 }}>GATEGUIDE</div>
+      <div className={`gg-mobile-topbar`}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button className="gg-nav-toggle" onClick={() => setNavOpen(true)} aria-label="Open navigation">☰</button>
+          <span style={{ color: c.text, fontWeight: 800, fontSize: 14, letterSpacing: 1 }}>GATEGUIDE</span>
+        </div>
+        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.subtext, borderRadius: 8, padding: "5px 9px", fontSize: 11, cursor: "pointer" }}>
+          {theme === "dark" ? "Light" : "Dark"}
+        </button>
+      </div>
+
+      <div className={`gg-backdrop ${navOpen ? "open" : ""}`} onClick={() => setNavOpen(false)} />
+
+      <div className={`gg-sidebar ${navOpen ? "open" : ""}`} style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ color: c.text, fontWeight: 800, fontSize: 16, letterSpacing: 1 }}>GATEGUIDE</div>
+          <button className="gg-nav-toggle" onClick={() => setNavOpen(false)} aria-label="Close navigation" style={{ display: navOpen ? "inline-flex" : undefined }}>✕</button>
+        </div>
         <div style={{ color: c.subtext, fontSize: 11, fontFamily: MONO, letterSpacing: 1 }}>OPERATIONS PORTAL</div>
         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
           {navItems.map((n, i) => (
@@ -274,11 +375,11 @@ export default function App() {
         </button>
       </div>
 
-      <div className="gg-main" style={{ padding: 30, overflowY: "auto" }}>
+      <div className="gg-main" style={{ padding: 30 }}>
         <div style={{ color: c.text, fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Welcome back</div>
         <div style={{ color: c.subtext, fontSize: 13, marginBottom: 24 }}>Choose a console to get started</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="gg-console-grid">
           {CONSOLES.map((cs) => (
             <div key={cs.id} onClick={() => openConsole(cs.id)} className="console-card" style={{
               background: c.card, border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: "pointer",
@@ -307,7 +408,7 @@ export default function App() {
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="gg-info-grid">
           <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 12, padding: 16 }}>
             <div style={{ color: c.text, fontWeight: 700, fontSize: 12, marginBottom: 10, letterSpacing: 1 }}>UPCOMING MATCHES</div>
             {STADIUM_DATA.matches.map((m, i) => (
@@ -335,13 +436,15 @@ export default function App() {
         </div>
       </div>
 
-      <div className="gg-right" style={{ background: c.sidebar, borderLeft: `1px solid ${c.border}`, padding: "20px 20px 90px", overflowY: "auto" }}>
-        {weather && (
-          <div style={{ background: c.board, borderRadius: 8, padding: 12, marginBottom: 14, border: `1px solid ${c.border}` }}>
-            <div style={{ color: c.subtext, fontSize: 10, fontFamily: MONO, letterSpacing: 1 }}>LIVE WEATHER — METLIFE</div>
+      <div className="gg-right" style={{ background: c.sidebar, borderLeft: `1px solid ${c.border}`, padding: "20px 20px 90px" }}>
+        <div style={{ background: c.board, borderRadius: 8, padding: 12, marginBottom: 14, border: `1px solid ${c.border}` }}>
+          <div style={{ color: c.subtext, fontSize: 10, fontFamily: MONO, letterSpacing: 1 }}>LIVE WEATHER — METLIFE</div>
+          {weather ? (
             <div style={{ color: c.accent, fontSize: 20, fontWeight: 800, fontFamily: MONO }}>{Math.round(weather.temperature * 9 / 5 + 32)}°F</div>
-          </div>
-        )}
+          ) : (
+            <div style={{ color: c.subtext, fontSize: 20, fontWeight: 800, fontFamily: MONO, opacity: 0.4 }}>—°F</div>
+          )}
+        </div>
 
         <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 10, letterSpacing: 1 }}>STADIUM MAP</div>
         <StadiumMap c={c} gateData={STADIUM_DATA.gates} />

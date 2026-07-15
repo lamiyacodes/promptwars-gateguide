@@ -83,7 +83,7 @@ function StadiumMap({ c, gateData }) {
     { id: "Gate 4", short: "G4", x: 160, y: 140 },
   ];
   return (
-    <svg viewBox="0 0 200 160" style={{ width: "100%", borderRadius: 10 }}>
+    <svg viewBox="0 0 200 160" role="img" aria-label="Stadium map showing crowd levels at Gates 1 through 4" style={{ width: "100%", borderRadius: 10 }}>
       <rect x="0" y="0" width="200" height="160" rx="12" fill={c.card} />
       <ellipse cx="100" cy="80" rx="70" ry="55" fill={c.pitch} stroke={c.border} strokeWidth="2" />
       <line x1="100" y1="25" x2="100" y2="135" stroke={c.border} strokeWidth="1.5" />
@@ -168,7 +168,7 @@ export default function App() {
       const data = await response.json();
       setMessages((prev) => [...prev, { role: "assistant", text: data.reply }]);
     } catch (err) {
-      setMessages((prev) => [...prev, { role: "assistant", text: "Connection issue. Phir se try karo." }]);
+      setMessages((prev) => [...prev, { role: "assistant", text: language === "en" ? "Connection issue — please try again." : "Connection issue. Phir se try karo." }]);
     } finally {
       setLoading(false);
     }
@@ -406,7 +406,7 @@ export default function App() {
           <div ref={factsRef} style={{ background: c.board, borderRadius: 10, padding: 14, marginBottom: 20, border: `1px solid ${c.border}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ color: c.text, fontWeight: 700, fontSize: 12, letterSpacing: 1 }}>GATE STATUS</div>
-              <button onClick={() => setShowFacts(false)} style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 13 }}>✕</button>
+              <button onClick={() => setShowFacts(false)} aria-label="Close gate status panel" style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 13 }}>✕</button>
             </div>
             {STADIUM_DATA.gates.map((g, i) => (
               <div key={i} className="flip-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", fontSize: 11, borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
@@ -500,7 +500,7 @@ export default function App() {
         }}>
           <div style={{ padding: 12, background: c.card, color: c.text, fontWeight: 700, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "16px 16px 0 0" }}>
             GateGuide Assistant
-            <button onClick={() => setChatOpen(false)} style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 16 }}>✕</button>
+            <button onClick={() => setChatOpen(false)} aria-label="Close chat" style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 16 }}>✕</button>
           </div>
           <div ref={bubbleScrollRef} style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {messages.map((m, i) => (
@@ -527,7 +527,7 @@ export default function App() {
           </div>
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(input); }} style={{ display: "flex", gap: 6, padding: 10, borderTop: `1px solid ${c.border}` }}>
             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={language === "en" ? "Type your message…" : "Type karo…"} style={{ flex: 1, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", fontSize: 12 }} />
-            <button type="submit" style={{ background: c.accent, color: c.accentText, border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>➤</button>
+            <button type="submit" aria-label="Send message" style={{ background: c.accent, color: c.accentText, border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>➤</button>
           </form>
         </div>
       )}

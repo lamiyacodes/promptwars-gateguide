@@ -19,18 +19,25 @@ const STADIUM_DATA = {
   food: [
     { id: "Food Court North", near: "Gate 3", note: "Vegetarian & halal options available" },
   ],
+  matches: [
+    { teams: "FIFA World Cup Final", date: "Jul 19, 2026", status: "SCHEDULED" },
+  ],
+  transit: [
+    { name: "NJ Transit — Meadowlands Rail Line", freq: "Runs from Secaucus Junction", status: "AVAILABLE" },
+    { name: "FIFA Shuttle Service", freq: "From Midtown Manhattan & Newark", status: "AVAILABLE" },
+  ],
 };
 
 const SUGGESTIONS_EN = [
-  { label: "How do I get to my seat?", icon: "🥅" },
-  { label: "Is there a wheelchair-friendly route?", icon: "♿" },
-  { label: "Where can I grab food nearby?", icon: "🍔" },
+  { label: "How do I get to my seat?" },
+  { label: "Is there a wheelchair-friendly route?" },
+  { label: "Where can I grab food nearby?" },
 ];
 
 const SUGGESTIONS_HI = [
-  { label: "Mera seat kahan hai?", icon: "🥅" },
-  { label: "Wheelchair wala route hai kya?", icon: "♿" },
-  { label: "Khana kahan milega paas mein?", icon: "🍔" },
+  { label: "Mera seat kahan hai?" },
+  { label: "Wheelchair wala route hai kya?" },
+  { label: "Khana kahan milega paas mein?" },
 ];
 
 const SYSTEM_PROMPT = `You are "GateGuide", a warm multilingual stadium assistant for a FIFA World Cup 2026 venue.
@@ -51,14 +58,22 @@ const THEMES = {
   dark: {
     bg: "#0A1420", sidebar: "#101B33", card: "#14213D", border: "#1F3A5F",
     text: "#F5F1E6", subtext: "#9FB3C8", accent: "#F4B942", accentText: "#3A2A05",
-    green: "#4ADE80", red: "#D64545", pitch: "#1A2E22",
+    green: "#4ADE80", red: "#D64545", pitch: "#1A2E22", board: "#0D1B2A",
   },
   light: {
     bg: "#F4F1E8", sidebar: "#FFFFFF", card: "#ECE7D9", border: "#D8D2BF",
     text: "#1F2937", subtext: "#6B6555", accent: "#C9922A", accentText: "#2A1A00",
-    green: "#1E8449", red: "#C0392B", pitch: "#DCEFE0",
+    green: "#1E8449", red: "#C0392B", pitch: "#DCEFE0", board: "#ECE7D9",
   },
 };
+
+const MONO = "'Courier New', ui-monospace, monospace";
+
+function crowdLabel(crowd) {
+  if (crowd === "High") return "AT CAP";
+  if (crowd === "Medium") return "BUSY";
+  return "OPEN";
+}
 
 function StadiumMap({ c, gateData }) {
   const positions = [
@@ -92,10 +107,10 @@ function StadiumMap({ c, gateData }) {
 }
 
 const CONSOLES = [
-  { id: "assistant", icon: "💬", title: "AI Assistant", desc: "Chat with GateGuide for real-time help" },
-  { id: "navigation", icon: "🧭", title: "Smart Navigation", desc: "Gate map & accessible routing" },
-  { id: "emergency", icon: "🚨", title: "Emergency Center", desc: "One-tap SOS & medical help" },
-  { id: "accessibility", icon: "♿", title: "Accessibility Hub", desc: "Step-free routes & support" },
+  { id: "assistant", code: "AI", title: "AI Assistant", desc: "Chat with GateGuide for real-time help" },
+  { id: "navigation", code: "NAV", title: "Smart Navigation", desc: "Gate map & accessible routing" },
+  { id: "emergency", code: "SOS", title: "Emergency Center", desc: "One-tap SOS & medical help" },
+  { id: "accessibility", code: "ACC", title: "Accessibility Hub", desc: "Step-free routes & support" },
 ];
 
 export default function App() {
@@ -105,14 +120,14 @@ export default function App() {
   const [language, setLanguage] = useState(null);
   const [showFacts, setShowFacts] = useState(false);
   const [theme, setTheme] = useState("dark");
-  const [view, setView] = useState("home");
   const [weather, setWeather] = useState(null);
-  const scrollRef = useRef(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const bubbleScrollRef = useRef(null);
   const c = THEMES[theme];
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading]);
+    bubbleScrollRef.current?.scrollTo({ top: bubbleScrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, loading, chatOpen]);
 
   useEffect(() => {
     fetch("https://api.open-meteo.com/v1/forecast?latitude=40.8135&longitude=-74.0745&current_weather=true")
@@ -124,8 +139,8 @@ export default function App() {
   function startChat(lang) {
     setLanguage(lang);
     const welcome = lang === "en"
-      ? "Kickoff time! ⚽ I'm GateGuide, your matchday assistant. Ask me about gates, accessibility, food, or emergency help."
-      : "Kickoff ho gaya! ⚽ Main GateGuide hoon, tumhara matchday assistant. Gate, accessibility, food ya emergency help ke baare mein poochho.";
+      ? "Welcome. I'm GateGuide, your matchday assistant. Ask me about gates, accessibility, food, or emergency help."
+      : "Namaste! Main GateGuide hoon, tumhara matchday assistant. Gate, accessibility, food ya emergency help ke baare mein poochho.";
     setMessages([{ role: "assistant", text: welcome }]);
   }
 
@@ -152,21 +167,22 @@ export default function App() {
   }
 
   function openConsole(id) {
-    setView(id);
+    if (id === "navigation") {
+      setShowFacts(true);
+      return;
+    }
+    setChatOpen(true);
     if (id === "emergency") {
       sendMessage(language === "en" ? "EMERGENCY - I need urgent help right now!" : "EMERGENCY - mujhe abhi urgent help chahiye!");
     } else if (id === "accessibility") {
       sendMessage(language === "en" ? "Tell me about accessibility options here" : "Accessibility options kya hain yahan?");
-    } else if (id === "navigation") {
-      setShowFacts(true);
     }
   }
 
   if (!language) {
     return (
       <div style={{ maxWidth: 460, margin: "40px auto", background: c.bg, borderRadius: 20, padding: 40, textAlign: "center", color: c.text, fontFamily: "'Inter', sans-serif" }}>
-        <div style={{ fontSize: 40, marginBottom: 10 }}>🏟️⚽</div>
-        <h2 style={{ marginBottom: 6, color: c.text }}>Welcome to GateGuide</h2>
+        <h2 style={{ marginBottom: 6, color: c.text, letterSpacing: 1 }}>GATEGUIDE</h2>
         <p style={{ color: c.subtext, marginBottom: 24 }}>Choose your language to begin</p>
         <button onClick={() => startChat("en")} style={{ display: "block", width: "100%", marginBottom: 12, padding: 12, borderRadius: 10, background: c.accent, color: c.accentText, border: "none", fontWeight: 700, cursor: "pointer" }}>
           Continue in English
@@ -175,22 +191,22 @@ export default function App() {
           Hinglish mein baat karo
         </button>
         <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ marginTop: 16, background: "transparent", border: "none", color: c.subtext, fontSize: 12, cursor: "pointer" }}>
-          {theme === "dark" ? "☀️ Switch to Light" : "🌙 Switch to Dark"}
+          {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
         </button>
       </div>
     );
   }
 
   const navItems = [
-    { icon: "🏠", label: "Home", onClick: () => setView("home") },
-    { icon: "💬", label: "AI Assistant", onClick: () => setView("assistant") },
-    { icon: "🧭", label: "Navigation", onClick: () => openConsole("navigation") },
-    { icon: "🚨", label: "Emergency", onClick: () => openConsole("emergency") },
-    { icon: "♿", label: "Accessibility", onClick: () => openConsole("accessibility") },
+    { code: "H", label: "Home", onClick: () => setChatOpen(false) },
+    { code: "AI", label: "AI Assistant", onClick: () => setChatOpen(true) },
+    { code: "NAV", label: "Navigation", onClick: () => openConsole("navigation") },
+    { code: "SOS", label: "Emergency", onClick: () => openConsole("emergency") },
+    { code: "ACC", label: "Accessibility", onClick: () => openConsole("accessibility") },
   ];
 
   return (
-    <div style={{ maxWidth: 1140, margin: "30px auto", background: c.bg, borderRadius: 20, overflow: "hidden", fontFamily: "'Inter', sans-serif", height: 680, display: "flex" }}>
+    <div className="gg-shell" style={{ maxWidth: 1140, margin: "30px auto", background: c.bg, borderRadius: 20, overflow: "hidden", fontFamily: "'Inter', sans-serif", position: "relative" }}>
       <style>{`
         @keyframes pulse {
           0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
@@ -203,151 +219,215 @@ export default function App() {
           transform: translateY(-3px);
           box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
+        .flip-row {
+          font-family: ${MONO};
+          letter-spacing: 0.5px;
+        }
+        .gg-shell {
+          display: flex;
+          width: 100%;
+          height: 680px;
+        }
+        .gg-sidebar {
+          width: 210px;
+          flex-shrink: 0;
+        }
+        .gg-right {
+          width: 240px;
+          flex-shrink: 0;
+        }
+        .gg-main {
+          flex: 1;
+          min-width: 0;
+        }
+        @media (max-width: 860px) {
+          .gg-shell {
+            flex-direction: column;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+          }
+          .gg-sidebar, .gg-right {
+            width: 100%;
+          }
+        }
       `}</style>
 
-      <div style={{ width: 210, background: c.sidebar, borderRight: `1px solid ${c.border}`, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ color: c.text, fontWeight: 800, fontSize: 16 }}>🏟️ GateGuide</div>
-        <div style={{ color: c.subtext, fontSize: 12 }}>Operations Portal</div>
+      <div className="gg-sidebar" style={{ background: c.sidebar, borderRight: `1px solid ${c.border}`, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ color: c.text, fontWeight: 800, fontSize: 16, letterSpacing: 1 }}>GATEGUIDE</div>
+        <div style={{ color: c.subtext, fontSize: 11, fontFamily: MONO, letterSpacing: 1 }}>OPERATIONS PORTAL</div>
         <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
           {navItems.map((n, i) => (
             <div key={i} onClick={n.onClick} style={{
               display: "flex", alignItems: "center", gap: 10,
               color: c.subtext, fontSize: 13, fontWeight: 500, padding: "10px 12px", borderRadius: 10, cursor: "pointer",
             }}>
-              <span style={{ width: 26, height: 26, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: c.card, fontSize: 14 }}>
-                {n.icon}
+              <span style={{ width: 30, height: 22, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: c.card, fontSize: 10, fontWeight: 800, color: c.accent, fontFamily: MONO }}>
+                {n.code}
               </span>
               {n.label}
             </div>
           ))}
         </div>
-        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ marginTop: "auto", background: "transparent", border: `1px solid ${c.border}`, color: c.subtext, borderRadius: 8, padding: "6px 10px", fontSize: 12, cursor: "pointer" }}>
-          {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.subtext, borderRadius: 8, padding: "6px 10px", fontSize: 12, cursor: "pointer" }}>
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </button>
       </div>
 
-      {view === "home" ? (
-        <div style={{ flex: 1, padding: 30, overflowY: "auto" }}>
-          <div style={{ color: c.text, fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Welcome back 👋</div>
-          <div style={{ color: c.subtext, fontSize: 13, marginBottom: 24 }}>Choose a console to get started</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            {CONSOLES.map((cs) => (
-              <div key={cs.id} onClick={() => openConsole(cs.id)} className="console-card" style={{
-                background: c.card, border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: "pointer",
-              }}>
-                <div style={{ fontSize: 26, marginBottom: 10 }}>{cs.icon}</div>
-                <div style={{ color: c.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{cs.title}</div>
-                <div style={{ color: c.subtext, fontSize: 12 }}>{cs.desc}</div>
-                <div style={{ color: c.accent, fontSize: 12, marginTop: 12, fontWeight: 700 }}>Enter Console →</div>
+      <div className="gg-main" style={{ padding: 30, overflowY: "auto" }}>
+        <div style={{ color: c.text, fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Welcome back</div>
+        <div style={{ color: c.subtext, fontSize: 13, marginBottom: 24 }}>Choose a console to get started</div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+          {CONSOLES.map((cs) => (
+            <div key={cs.id} onClick={() => openConsole(cs.id)} className="console-card" style={{
+              background: c.card, border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: "pointer",
+            }}>
+              <div style={{ display: "inline-block", background: c.board, color: c.accent, fontFamily: MONO, fontSize: 11, fontWeight: 800, padding: "4px 8px", borderRadius: 6, marginBottom: 10, letterSpacing: 1 }}>
+                {cs.code}
+              </div>
+              <div style={{ color: c.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{cs.title}</div>
+              <div style={{ color: c.subtext, fontSize: 12 }}>{cs.desc}</div>
+              <div style={{ color: c.accent, fontSize: 12, marginTop: 12, fontWeight: 700 }}>Enter Console →</div>
+            </div>
+          ))}
+        </div>
+
+        {showFacts && (
+          <div style={{ background: c.board, borderRadius: 10, padding: 14, marginBottom: 20, border: `1px solid ${c.border}` }}>
+            <div style={{ color: c.text, fontWeight: 700, fontSize: 12, marginBottom: 10, letterSpacing: 1 }}>GATE STATUS</div>
+            {STADIUM_DATA.gates.map((g, i) => (
+              <div key={i} className="flip-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", fontSize: 11, borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
+                <span style={{ color: c.subtext }}>{g.id.toUpperCase()} — {g.section}</span>
+                <span style={{ color: g.crowd === "High" ? c.red : g.crowd === "Medium" ? c.accent : c.green, fontWeight: 700, whiteSpace: "nowrap", marginLeft: 8 }}>
+                  {crowdLabel(g.crowd)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 12, padding: 16 }}>
+            <div style={{ color: c.text, fontWeight: 700, fontSize: 12, marginBottom: 10, letterSpacing: 1 }}>UPCOMING MATCHES</div>
+            {STADIUM_DATA.matches.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < STADIUM_DATA.matches.length - 1 ? `1px solid ${c.border}` : "none" }}>
+                <div>
+                  <div style={{ color: c.text, fontSize: 12.5, fontWeight: 600 }}>{m.teams}</div>
+                  <div style={{ color: c.subtext, fontSize: 11 }}>{m.date}</div>
+                </div>
+                <span style={{ color: c.green, fontSize: 10, fontFamily: MONO, fontWeight: 700, letterSpacing: 0.5 }}>{m.status}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 12, padding: 16 }}>
+            <div style={{ color: c.text, fontWeight: 700, fontSize: 12, marginBottom: 10, letterSpacing: 1 }}>TRANSIT OPTIONS</div>
+            {STADIUM_DATA.transit.map((t, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < STADIUM_DATA.transit.length - 1 ? `1px solid ${c.border}` : "none" }}>
+                <div>
+                  <div style={{ color: c.text, fontSize: 12.5, fontWeight: 600 }}>{t.name}</div>
+                  <div style={{ color: c.subtext, fontSize: 11 }}>{t.freq}</div>
+                </div>
+                <span style={{ color: c.green, fontSize: 10, fontFamily: MONO, fontWeight: 700, letterSpacing: 0.5 }}>{t.status}</span>
               </div>
             ))}
           </div>
         </div>
-      ) : (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: 18, background: c.card, color: c.text, fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              🏟️ GateGuide
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.green, display: "inline-block", animation: "pulse 1.5s infinite" }} />
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => setShowFacts(!showFacts)} style={{ background: "transparent", border: `1px solid ${c.subtext}`, color: c.subtext, borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>
-                ℹ️ Gates
-              </button>
-              <button onClick={() => setView("home")} style={{ background: "transparent", border: `1px solid ${c.subtext}`, color: c.subtext, borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>
-                ← Back
-              </button>
-            </div>
+      </div>
+
+      <div className="gg-right" style={{ background: c.sidebar, borderLeft: `1px solid ${c.border}`, padding: "20px 20px 90px", overflowY: "auto" }}>
+        {weather && (
+          <div style={{ background: c.board, borderRadius: 8, padding: 12, marginBottom: 14, border: `1px solid ${c.border}` }}>
+            <div style={{ color: c.subtext, fontSize: 10, fontFamily: MONO, letterSpacing: 1 }}>LIVE WEATHER — METLIFE</div>
+            <div style={{ color: c.accent, fontSize: 20, fontWeight: 800, fontFamily: MONO }}>{Math.round(weather.temperature * 9 / 5 + 32)}°F</div>
           </div>
+        )}
 
-          {showFacts && (
-            <div style={{ background: c.sidebar, padding: 14, fontSize: 12, color: c.subtext, borderBottom: `1px solid ${c.border}` }}>
-              {STADIUM_DATA.gates.map((g, i) => (
-                <div key={i} style={{ marginBottom: 4 }}>
-                  <strong style={{ color: c.text }}>{g.id}</strong> — {g.section} · {g.note}
-                </div>
-              ))}
-            </div>
-          )}
+        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 10, letterSpacing: 1 }}>STADIUM MAP</div>
+        <StadiumMap c={c} gateData={STADIUM_DATA.gates} />
 
-          <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10, background: c.bg }}>
+        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, margin: "18px 0 10px", letterSpacing: 1 }}>LIVE STATUS</div>
+        <div style={{ background: c.board, borderRadius: 8, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: MONO, border: `1px solid ${c.border}` }}>
+          <span style={{ color: c.subtext, fontSize: 10, letterSpacing: 1 }}>GATES ACTIVE</span>
+          <span style={{ color: c.accent, fontSize: 16, fontWeight: 800 }}>4/4</span>
+        </div>
+        <div style={{ background: c.board, borderRadius: 8, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: MONO, border: `1px solid ${c.border}` }}>
+          <span style={{ color: c.subtext, fontSize: 10, letterSpacing: 1 }}>ACCESSIBLE</span>
+          <span style={{ color: c.green, fontSize: 16, fontWeight: 800 }}>3 RDY</span>
+        </div>
+        <div style={{ background: c.board, borderRadius: 8, padding: "10px 12px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: MONO, border: `1px solid ${c.border}` }}>
+          <span style={{ color: c.subtext, fontSize: 10, letterSpacing: 1 }}>MEDICAL</span>
+          <span style={{ color: c.text, fontSize: 16, fontWeight: 800 }}>2 STF</span>
+        </div>
+
+        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 8, letterSpacing: 1 }}>GATE STATUS</div>
+        <div style={{ background: c.board, borderRadius: 8, border: `1px solid ${c.border}`, overflow: "hidden" }}>
+          {STADIUM_DATA.gates.map((g, i) => {
+            const crowdColor = g.crowd === "High" ? c.red : g.crowd === "Medium" ? c.accent : c.green;
+            return (
+              <div key={i} className="flip-row" style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "9px 12px", fontSize: 11,
+                borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none",
+              }}>
+                <span style={{ color: c.subtext }}>{g.id.toUpperCase()}</span>
+                <span style={{ color: crowdColor, fontWeight: 700, whiteSpace: "nowrap" }}>{crowdLabel(g.crowd)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {chatOpen && (
+        <div style={{
+          position: "fixed", bottom: 80, right: 20, width: 320, maxWidth: "90vw", height: 420,
+          background: c.sidebar, border: `1px solid ${c.border}`, borderRadius: 16,
+          display: "flex", flexDirection: "column", boxShadow: "0 8px 30px rgba(0,0,0,0.4)", zIndex: 100,
+        }}>
+          <div style={{ padding: 12, background: c.card, color: c.text, fontWeight: 700, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "16px 16px 0 0" }}>
+            GateGuide Assistant
+            <button onClick={() => setChatOpen(false)} style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 16 }}>✕</button>
+          </div>
+          <div ref={bubbleScrollRef} style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {messages.map((m, i) => (
               <div key={i} style={{
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                 background: m.role === "user" ? c.accent : c.card,
                 color: m.role === "user" ? c.accentText : c.text,
-                padding: "10px 14px", borderRadius: 14, maxWidth: "80%", position: "relative",
+                padding: "8px 10px", borderRadius: 10, maxWidth: "85%", fontSize: 12.5,
               }}>
                 {m.text}
-                {m.role === "assistant" && (
-                  <button onClick={() => navigator.clipboard.writeText(m.text)} style={{ display: "block", marginTop: 6, background: "transparent", border: "none", color: c.subtext, fontSize: 11, cursor: "pointer", padding: 0 }}>
-                    📋 Copy
-                  </button>
-                )}
               </div>
             ))}
-            {loading && <div style={{ color: c.subtext }}>GateGuide typing…</div>}
+            {loading && <div style={{ color: c.subtext, fontSize: 12 }}>typing…</div>}
           </div>
-
-          <div style={{ display: "flex", gap: 8, padding: "12px 12px 0" }}>
-            <button onClick={() => openConsole("emergency")} style={{ flex: "0 0 auto", background: c.red, color: "#fff", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              🚨 SOS
+          <div style={{ display: "flex", gap: 6, padding: "0 10px 8px", flexWrap: "wrap" }}>
+            <button onClick={() => sendMessage(language === "en" ? "EMERGENCY - I need urgent help right now!" : "EMERGENCY - mujhe abhi urgent help chahiye!")} style={{ background: c.red, color: "#fff", border: "none", borderRadius: 8, padding: "5px 8px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+              SOS
             </button>
-            {(language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_HI)
-              .filter((s) => !s.label.toLowerCase().includes("lost"))
-              .map((s, i) => (
-                <button key={i} onClick={() => sendMessage(s.label)} style={{ fontSize: 12, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer" }}>
-                  {s.icon} {s.label}
-                </button>
-              ))}
+            {(language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_HI).slice(0, 2).map((s, i) => (
+              <button key={i} onClick={() => sendMessage(s.label)} style={{ background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "5px 8px", fontSize: 11, cursor: "pointer" }}>
+                {s.label}
+              </button>
+            ))}
           </div>
-
-          <form onSubmit={(e) => { e.preventDefault(); sendMessage(input); }} style={{ display: "flex", gap: 8, padding: 14 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type karo…" style={{ flex: 1, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "8px 12px" }} />
-            <button type="submit" style={{ background: c.accent, color: c.accentText, border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer" }}>➤</button>
+          <form onSubmit={(e) => { e.preventDefault(); sendMessage(input); }} style={{ display: "flex", gap: 6, padding: 10, borderTop: `1px solid ${c.border}` }}>
+            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type karo…" style={{ flex: 1, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", fontSize: 12 }} />
+            <button type="submit" style={{ background: c.accent, color: c.accentText, border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>➤</button>
           </form>
         </div>
       )}
 
-      <div style={{ width: 240, background: c.sidebar, borderLeft: `1px solid ${c.border}`, padding: 20, overflowY: "auto" }}>
-        {weather && (
-          <div style={{ background: c.card, borderRadius: 10, padding: 12, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ color: c.subtext, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5 }}>Live Weather · MetLife Stadium</div>
-              <div style={{ color: c.text, fontSize: 18, fontWeight: 800 }}>{Math.round(weather.temperature * 9/5 + 32)}°F</div>
-            </div>
-            <span style={{ fontSize: 22 }}>🌤️</span>
-          </div>
-        )}
-
-        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Stadium Map</div>
-        <StadiumMap c={c} gateData={STADIUM_DATA.gates} />
-
-        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, margin: "18px 0 10px" }}>⚡ Live Status</div>
-        <div style={{ background: c.card, borderRadius: 10, padding: 12, marginBottom: 10 }}>
-          <div style={{ color: c.subtext, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5 }}>Gates Active</div>
-          <div style={{ color: c.accent, fontSize: 18, fontWeight: 800 }}>4 / 4</div>
-        </div>
-        <div style={{ background: c.card, borderRadius: 10, padding: 12, marginBottom: 10 }}>
-          <div style={{ color: c.subtext, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5 }}>Accessible Routes</div>
-          <div style={{ color: c.green, fontSize: 18, fontWeight: 800 }}>3 Ready</div>
-        </div>
-        <div style={{ background: c.card, borderRadius: 10, padding: 12, marginBottom: 16 }}>
-          <div style={{ color: c.subtext, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5 }}>Medical Points</div>
-          <div style={{ color: c.text, fontSize: 18, fontWeight: 800 }}>2 Staffed</div>
-        </div>
-
-        <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 10 }}>👥 Gate Crowd Levels</div>
-        {STADIUM_DATA.gates.map((g, i) => {
-          const crowdColor = g.crowd === "High" ? c.red : g.crowd === "Medium" ? c.accent : c.green;
-          return (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
-              <span style={{ color: c.text, fontSize: 12 }}>{g.id}</span>
-              <span style={{ color: crowdColor, fontSize: 11, fontWeight: 700, background: c.card, padding: "3px 8px", borderRadius: 6 }}>{g.crowd}</span>
-            </div>
-          );
-        })}
-      </div>
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        style={{
+          position: "fixed", bottom: 20, right: 20, padding: "12px 18px", borderRadius: 26,
+          background: c.accent, color: c.accentText, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.35)", zIndex: 101,
+        }}
+      >
+        Chat
+      </button>
     </div>
   );
 }

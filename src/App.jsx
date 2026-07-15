@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 
 const STADIUM_DATA = {
   gates: [
@@ -75,7 +75,7 @@ function crowdLabel(crowd) {
   return "OPEN";
 }
 
-function StadiumMap({ c, gateData }) {
+const StadiumMap = React.memo(function StadiumMap({ c, gateData }) {
   const positions = [
     { id: "Gate 1", short: "G1", x: 40, y: 20 },
     { id: "Gate 2", short: "G2", x: 160, y: 20 },
@@ -104,7 +104,7 @@ function StadiumMap({ c, gateData }) {
       })}
     </svg>
   );
-}
+});
 
 const CONSOLES = [
   { id: "assistant", code: "AI", title: "AI Assistant", desc: "Real-time chat & matchday help" },
@@ -126,6 +126,11 @@ export default function App() {
   const bubbleScrollRef = useRef(null);
   const factsRef = useRef(null);
   const c = THEMES[theme];
+
+  const currentSuggestions = useMemo(
+    () => (language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_HI),
+    [language]
+  );
 
   useEffect(() => {
     bubbleScrollRef.current?.scrollTo({ top: bubbleScrollRef.current.scrollHeight, behavior: "smooth" });
@@ -519,7 +524,7 @@ export default function App() {
             <button onClick={() => sendMessage(language === "en" ? "EMERGENCY - I need urgent help right now!" : "EMERGENCY - mujhe abhi urgent help chahiye!")} style={{ background: c.red, color: "#fff", border: "none", borderRadius: 8, padding: "5px 8px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
               SOS
             </button>
-            {(language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_HI).slice(0, 2).map((s, i) => (
+            {currentSuggestions.slice(0, 2).map((s, i) => (
               <button key={i} onClick={() => sendMessage(s.label)} style={{ background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "5px 8px", fontSize: 11, cursor: "pointer" }}>
                 {s.label}
               </button>

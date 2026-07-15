@@ -6,6 +6,20 @@ export default async function handler(req, res) {
   try {
     const { systemPrompt, messages } = req.body;
 
+    if (!systemPrompt || !Array.isArray(messages)) {
+      return res.status(400).json({ reply: "Invalid request format." });
+    }
+
+    if (messages.length > 50) {
+      return res.status(400).json({ reply: "Conversation too long." });
+    }
+
+    for (const m of messages) {
+      if (typeof m.text !== "string" || m.text.length > 2000) {
+        return res.status(400).json({ reply: "Invalid message content." });
+      }
+    }
+
     const contents = messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.text }],

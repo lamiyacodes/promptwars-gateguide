@@ -70,7 +70,7 @@ const THEMES = {
 const MONO = "'Courier New', ui-monospace, monospace";
 
 function crowdLabel(crowd) {
-  if (crowd === "High") return "AT CAP";
+  if (crowd === "High") return "FULL";
   if (crowd === "Medium") return "BUSY";
   return "OPEN";
 }
@@ -124,11 +124,18 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const bubbleScrollRef = useRef(null);
+  const factsRef = useRef(null);
   const c = THEMES[theme];
 
   useEffect(() => {
     bubbleScrollRef.current?.scrollTo({ top: bubbleScrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading, chatOpen]);
+
+  useEffect(() => {
+    if (showFacts && factsRef.current) {
+      factsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showFacts]);
 
   useEffect(() => {
     fetch("https://api.open-meteo.com/v1/forecast?latitude=40.8135&longitude=-74.0745&current_weather=true")
@@ -171,6 +178,7 @@ export default function App() {
     setNavOpen(false);
     if (id === "navigation") {
       setShowFacts(true);
+      setTimeout(() => factsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
       return;
     }
     setChatOpen(true);
@@ -395,8 +403,11 @@ export default function App() {
         </div>
 
         {showFacts && (
-          <div style={{ background: c.board, borderRadius: 10, padding: 14, marginBottom: 20, border: `1px solid ${c.border}` }}>
-            <div style={{ color: c.text, fontWeight: 700, fontSize: 12, marginBottom: 10, letterSpacing: 1 }}>GATE STATUS</div>
+          <div ref={factsRef} style={{ background: c.board, borderRadius: 10, padding: 14, marginBottom: 20, border: `1px solid ${c.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ color: c.text, fontWeight: 700, fontSize: 12, letterSpacing: 1 }}>GATE STATUS</div>
+              <button onClick={() => setShowFacts(false)} style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 13 }}>✕</button>
+            </div>
             {STADIUM_DATA.gates.map((g, i) => (
               <div key={i} className="flip-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", fontSize: 11, borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
                 <span style={{ color: c.subtext }}>{g.id.toUpperCase()} — {g.section}</span>
@@ -515,7 +526,7 @@ export default function App() {
             ))}
           </div>
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(input); }} style={{ display: "flex", gap: 6, padding: 10, borderTop: `1px solid ${c.border}` }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type karo…" style={{ flex: 1, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", fontSize: 12 }} />
+            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={language === "en" ? "Type your message…" : "Type karo…"} style={{ flex: 1, background: c.card, color: c.text, border: `1px solid ${c.border}`, borderRadius: 8, padding: "6px 10px", fontSize: 12 }} />
             <button type="submit" style={{ background: c.accent, color: c.accentText, border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>➤</button>
           </form>
         </div>

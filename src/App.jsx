@@ -383,6 +383,9 @@ export default function App() {
             </div>
           ))}
         </div>
+        <button onClick={() => setLanguage(null)} style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.subtext, borderRadius: 8, padding: "6px 10px", fontSize: 12, cursor: "pointer", marginBottom: 8 }}>
+          Change Language
+        </button>
         <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.subtext, borderRadius: 8, padding: "6px 10px", fontSize: 12, cursor: "pointer" }}>
           {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </button>
@@ -503,10 +506,19 @@ export default function App() {
           background: c.sidebar, border: `1px solid ${c.border}`, borderRadius: 16,
           display: "flex", flexDirection: "column", boxShadow: "0 8px 30px rgba(0,0,0,0.4)", zIndex: 100,
         }}>
-          <div style={{ padding: 12, background: c.card, color: c.text, fontWeight: 700, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "16px 16px 0 0" }}>
-            GateGuide Assistant
+        <div style={{ padding: 12, background: c.card, color: c.text, fontWeight: 700, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "16px 16px 0 0" }}>
+          GateGuide Assistant
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button
+              onClick={() => startChat(language)}
+              aria-label="Start new chat"
+              style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 11, fontWeight: 700 }}
+            >
+              New Chat
+            </button>
             <button onClick={() => setChatOpen(false)} aria-label="Close chat" style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 16 }}>✕</button>
           </div>
+       </div>
           <div ref={bubbleScrollRef} style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {messages.map((m, i) => (
               <div key={i} style={{

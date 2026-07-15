@@ -409,9 +409,9 @@ export default function App() {
               <button onClick={() => setShowFacts(false)} style={{ background: "transparent", border: "none", color: c.subtext, cursor: "pointer", fontSize: 13 }}>✕</button>
             </div>
             {STADIUM_DATA.gates.map((g, i) => (
-              <div key={i} className="flip-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", fontSize: 11, borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
+              <div key={i} className="flip-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", fontSize: 11, borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none" }}>
                 <span style={{ color: c.subtext }}>{g.id.toUpperCase()} — {g.section}</span>
-                <span style={{ color: g.crowd === "High" ? c.red : g.crowd === "Medium" ? c.accent : c.green, fontWeight: 700, whiteSpace: "nowrap", marginLeft: 8 }}>
+                <span style={{ color: g.crowd === "High" ? c.red : g.crowd === "Medium" ? c.accent : c.green, fontWeight: 800, fontSize: 13, whiteSpace: "nowrap", marginLeft: 8 }}>
                   {crowdLabel(g.crowd)}
                 </span>
               </div>
@@ -467,11 +467,11 @@ export default function App() {
         </div>
         <div style={{ background: c.board, borderRadius: 8, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: MONO, border: `1px solid ${c.border}` }}>
           <span style={{ color: c.subtext, fontSize: 10, letterSpacing: 1 }}>ACCESSIBLE</span>
-          <span style={{ color: c.green, fontSize: 16, fontWeight: 800 }}>3 RDY</span>
+          <span style={{ color: c.green, fontSize: 16, fontWeight: 800 }}>3 READY</span>
         </div>
         <div style={{ background: c.board, borderRadius: 8, padding: "10px 12px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: MONO, border: `1px solid ${c.border}` }}>
           <span style={{ color: c.subtext, fontSize: 10, letterSpacing: 1 }}>MEDICAL</span>
-          <span style={{ color: c.text, fontSize: 16, fontWeight: 800 }}>2 STF</span>
+          <span style={{ color: c.text, fontSize: 16, fontWeight: 800 }}>2 STAFFED</span>
         </div>
 
         <div style={{ color: c.text, fontWeight: 700, fontSize: 13, marginBottom: 8, letterSpacing: 1 }}>GATE STATUS</div>
@@ -481,11 +481,11 @@ export default function App() {
             return (
               <div key={i} className="flip-row" style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "9px 12px", fontSize: 11,
+                padding: "9px 12px",
                 borderBottom: i < STADIUM_DATA.gates.length - 1 ? `1px solid ${c.border}` : "none",
               }}>
-                <span style={{ color: c.subtext }}>{g.id.toUpperCase()}</span>
-                <span style={{ color: crowdColor, fontWeight: 700, whiteSpace: "nowrap" }}>{crowdLabel(g.crowd)}</span>
+                <span style={{ color: c.subtext, fontSize: 11 }}>{g.id.toUpperCase()}</span>
+                <span style={{ color: crowdColor, fontWeight: 800, fontSize: 16, whiteSpace: "nowrap" }}>{crowdLabel(g.crowd)}</span>
               </div>
             );
           })}

@@ -45,7 +45,7 @@ Manually tested across desktop and mobile breakpoints (Chrome DevTools + physica
 
 ## Live Demo
 
-🔗 [Try GateGuide live](your-deployed-link-here)
+🔗 [Try GateGuide live](https://promptwars-gateguide.vercel.app/)
 
 ## Author
 

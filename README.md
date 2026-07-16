@@ -21,6 +21,9 @@ GateGuide lets fans choose English or Hinglish upfront, then answers real questi
 - 💬 Natural, multi-turn conversation (remembers context)
 - 📱 Mobile-first design with a collapsible navigation drawer
 
+## Alignment with Challenge Brief
+GateGuide directly addresses the brief's call for **navigation**, **crowd management**, **accessibility**, and **multilingual assistance** at FIFA World Cup 2026 venues — using GenAI (Google Gemini) for real-time, context-aware assistance grounded in structured stadium data.
+
 ## Tech Stack
 
 - **Frontend:** React (Vite)

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 
 const STADIUM_DATA = {
   gates: [
@@ -69,6 +70,12 @@ const THEMES = {
 
 const MONO = "'Courier New', ui-monospace, monospace";
 
+/**
+ * Maps a gate's raw crowd level to a fan-facing status label.
+ * @param {"Low"|"Medium"|"High"} crowd
+ * @returns {string} Display label for the gate status board
+ */
+
 function crowdLabel(crowd) {
   if (crowd === "High") return "FULL";
   if (crowd === "Medium") return "BUSY";
@@ -82,6 +89,7 @@ const StadiumMap = React.memo(function StadiumMap({ c, gateData }) {
     { id: "Gate 3", short: "G3", x: 40, y: 140 },
     { id: "Gate 4", short: "G4", x: 160, y: 140 },
   ];
+  const gateMap = new Map(gateData.map((g) => [g.id, g]));
   return (
     <svg viewBox="0 0 200 160" role="img" aria-label="Stadium map showing crowd levels at Gates 1 through 4" style={{ width: "100%", borderRadius: 10 }}>
       <rect x="0" y="0" width="200" height="160" rx="12" fill={c.card} />
@@ -93,7 +101,7 @@ const StadiumMap = React.memo(function StadiumMap({ c, gateData }) {
       <rect x="8" y="30" width="12" height="100" rx="4" fill="none" stroke={c.border} strokeWidth="1" />
       <rect x="180" y="30" width="12" height="100" rx="4" fill="none" stroke={c.border} strokeWidth="1" />
       {positions.map((p) => {
-        const gate = gateData.find((g) => g.id === p.id);
+        const gate = gateMap.get(p.id);
         const dotColor = gate?.crowd === "High" ? c.red : gate?.crowd === "Medium" ? c.accent : c.green;
         return (
           <g key={p.id}>
@@ -105,6 +113,11 @@ const StadiumMap = React.memo(function StadiumMap({ c, gateData }) {
     </svg>
   );
 });
+
+StadiumMap.propTypes = {
+  c: PropTypes.object.isRequired,
+  gateData: PropTypes.array.isRequired,
+};
 
 const CONSOLES = [
   { id: "assistant", code: "AI", title: "AI Assistant", desc: "Real-time chat & matchday help" },
@@ -133,7 +146,9 @@ export default function App() {
   );
 
   useEffect(() => {
-    bubbleScrollRef.current?.scrollTo({ top: bubbleScrollRef.current.scrollHeight, behavior: "smooth" });
+    if (bubbleScrollRef.current?.scrollTo) {
+      bubbleScrollRef.current.scrollTo({ top: bubbleScrollRef.current.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, loading, chatOpen]);
 
   useEffect(() => {
@@ -157,7 +172,12 @@ export default function App() {
     setMessages([{ role: "assistant", text: welcome }]);
   }
 
-  async function sendMessage(text) {
+/**
+ * Sends a user message to the Gemini-backed chat API and appends the reply.
+ * @param {string} text - The message content to send
+ */
+
+  const sendMessage = useCallback(async (text) => {
     if (!text.trim() || loading) return;
     const userMsg = { role: "user", text };
     const nextMessages = [...messages, userMsg];
@@ -177,7 +197,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }
+    }, [messages, language]);
 
   function openConsole(id) {
     setNavOpen(false);
